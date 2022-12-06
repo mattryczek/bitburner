@@ -51,7 +51,7 @@ function hack_server(ns, target) {
 	ns.tprint(`Script ETA ${Math.trunc(ns.getHackTime(target) / 1000)}s this iteration.`);
 }
 
-function weaken_server(ns, target) {
+async function weaken_server(ns, target) {
 	let threads, servers = 0;
 	let total_threads = 1 - 1;
 	let script_ram = ns.getScriptRam('weaken.js');
@@ -62,7 +62,7 @@ function weaken_server(ns, target) {
 		if (max_ram == 0) { continue };
 		servers++;
 
-		ns.scp('weaken.js', server);
+		await ns.scp('weaken.js', server);
 		ns.killall(server);
 
 		threads = Math.floor(max_ram / script_ram);
