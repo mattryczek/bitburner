@@ -29,11 +29,12 @@ export async function main(ns) {
 	const weaken_str_norm = weaken_str + ' '.repeat(spacing - weaken_str.length);
 	const hack_str_norm   = hack_str   + ' '.repeat(spacing - hack_str.length);
 
-	const steal_percentage = 0.75;
+	const steal_percentage = 0.5;
+	const sec_threshold = 0.5;
+	const steal_threshold = 0.9;
 	const hack_amount = ns.hackAnalyze(target);
 	const hack_needed = Math.ceil(steal_percentage / hack_amount);
-	const sec_threshold = 2;
-	const steal_threshold = 0.9;
+	const double_need = Math.ceil(ns.growthAnalyze(target, 2));
 
 	const whoami = ns.getHostname();
 	const available_ram = ns.getServerMaxRam(whoami) - ns.getServerUsedRam(whoami);
@@ -60,6 +61,7 @@ export async function main(ns) {
 	ns.print(`Funds: $${fmt(Math.trunc(ns.getServerMoneyAvailable(target)))} / $${fmt(server_max_money)}`);
 	ns.print(`Security: ${ns.getServerSecurityLevel(target)} / ${server_min_sec_lvl}`);
 	ns.print(`Growth Rate: ${ns.getServerGrowth(target)}`);
+	ns.print(`Growth Amount: Need ${double_need} threads to double money on server.`);
 	ns.print(`Hack amount: ${(hack_amount * 100).toFixed(2)}%, need ${hack_needed} threads to steal ${steal_percentage * 100}% of total funds at a time.`)
 	ns.print('');
 	ns.print('');
@@ -83,7 +85,7 @@ export async function main(ns) {
 	}
 
 	async function _grow() {
-		if (ns.getServerMoneyAvailable(target) <= (server_max_money * steal_threshold)){
+		if (ns.getServerMoneyAvailable(target) < (server_max_money * steal_threshold)){
 			ns.print(`${grow_str_norm}Current server funds: $${fmt(Math.trunc(ns.getServerMoneyAvailable(target)))}`);
 
 			ns.print(`${grow_str_norm}Growing server with ${grow_threads} threads.`)
@@ -110,7 +112,7 @@ export async function main(ns) {
 
 		await _weaken();
 		await _grow();
-		await _weaken();
+		// await _weaken();
 		await _hack();
 	}
 }
