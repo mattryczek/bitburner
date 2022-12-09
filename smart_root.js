@@ -14,7 +14,7 @@ export async function main(ns) {
   let available_exploits = [];
   let req_ports = ns.getServerNumPortsRequired(target);
 
-  ns.tprint(`AutoROOT v0 ------------------------------`);
+  ns.tprint(`SmartROOT v1 ------------------------------`);
   ns.tprint("         __" + "_".repeat(target.toString().length) + "__");
   ns.tprint(`         >>${target}<<`);
   ns.tprint("         ‾‾" + "‾".repeat(target.toString().length) + "‾‾");
