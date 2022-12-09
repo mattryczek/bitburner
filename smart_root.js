@@ -18,13 +18,14 @@ export async function main(ns) {
   ns.tprint("         __" + "_".repeat(target.toString().length) + "__");
   ns.tprint(`         >>${target}<<`);
   ns.tprint("         ‾‾" + "‾".repeat(target.toString().length) + "‾‾");
-  ns.tprint(`Number of ports required open to NUKE: ${req_ports}`);
 
   // First check if we have root. If true then return.
   if (ns.hasRootAccess(target)) {
     ns.tprint("Already have root!");
     return true;
   }
+
+  ns.tprint(`Number of ports required open to NUKE: ${req_ports}`);
 
   // Next check if server cant be autonuked (no ports required open).
   if (req_ports === 0) {
