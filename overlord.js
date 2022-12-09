@@ -22,7 +22,7 @@ export async function main(ns) {
       get_money(ns);
       break;
     case "nuke":
-      ns.run('smart_root.js', 1, ns.args[1]);
+      ns.run('smart_root.js', 1, ns.args[1], 1);
       break;
     default:
       ns.tprint("I need to know what you want me to do...");

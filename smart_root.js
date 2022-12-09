@@ -1,7 +1,8 @@
 /** @param {NS} ns */
 
-export async function main(ns) {
+export function main(ns) {
   let target = ns.args[0];
+  let verbosity = ns.args[1];
 
   let exploits = [
     "BruteSSH.exe",
@@ -14,23 +15,23 @@ export async function main(ns) {
   let available_exploits = [];
   let req_ports = ns.getServerNumPortsRequired(target);
 
-  ns.tprint(`SmartROOT v1 ------------------------------`);
-  ns.tprint("         __" + "_".repeat(target.toString().length) + "__");
-  ns.tprint(`         >>${target}<<`);
-  ns.tprint("         ‾‾" + "‾".repeat(target.toString().length) + "‾‾");
+  cprint(ns, `SmartROOT v2 ------------------------------`, verbosity);
+  cprint(ns, "         __" + "_".repeat(target.toString().length) + "__", verbosity);
+  cprint(ns, `         >>${target}<<`, verbosity);
+  cprint(ns, "         ‾‾" + "‾".repeat(target.toString().length) + "‾‾", verbosity);
 
   // First check if we have root. If true then return.
   if (ns.hasRootAccess(target)) {
-    ns.tprint("Already have root!");
+    cprint(ns, "Already have root!", verbosity);
     return true;
   }
 
-  ns.tprint(`Number of ports required open to NUKE: ${req_ports}`);
+  cprint(ns, `Number of ports required open to NUKE: ${req_ports}`, verbosity);
 
   // Next check if server cant be autonuked (no ports required open).
   if (req_ports === 0) {
     ns.nuke(target);
-    ns.tprint(`NUKE successful, got root.`);
+    cprint(ns, `NUKE successful, got root.`, verbosity);
     return true;
   }
 
@@ -38,13 +39,13 @@ export async function main(ns) {
   for (let exploit of exploits) {
     if (ns.fileExists(exploit)) {
       available_exploits.push(exploit);
-      ns.tprint(`Loaded exploit ${exploit}`);
+      cprint(ns, `Loaded exploit ${exploit}`, verbosity);
     }
   }
 
   // We can't nuke if we don't have enough exploits.
   if (ns.getServerNumPortsRequired(target) > available_exploits.length) {
-    ns.tprint(`Not able to open enough ports on >>${target}<< to get root!`);
+    cprint(ns, `Not able to open enough ports on >>${target}<< to get root!`, verbosity);
     return false;
   }
 
@@ -54,9 +55,9 @@ export async function main(ns) {
     run_exploit(ns, exploit, target);
   }
 
-  ns.tprint(`${available_exploits.length} ports opened, tactical NUKE incoming.`);
+  cprint(ns, `${available_exploits.length} ports opened, tactical NUKE incoming.`, verbosity);
   ns.nuke(target);
-  ns.tprint(`Root status: ${ns.hasRootAccess(target)}`);
+  cprint(ns, `Root status: ${ns.hasRootAccess(target)}`, verbosity);
   return true;
 }
 
@@ -78,6 +79,10 @@ function run_exploit(ns, exploit, target) {
       ns.sqlinject(target);
       break;
     default:
-      ns.tprint("You should not be executing...");
+      cprint(ns, "You should not be executing...", verbosity);
   }
+}
+
+function cprint(ns, str, verbosity){
+  verbosity === 0 ? ns.print(str) : ns.tprint(str);
 }
