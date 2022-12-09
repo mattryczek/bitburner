@@ -2,6 +2,8 @@
 
 import fmt from "./helpers/fmt.js"
 
+const whitelist = ['darkweb'];
+
 export async function main(ns) {
   switch (ns.args[0]) {
     case "recon":
@@ -29,6 +31,7 @@ export async function main(ns) {
 
 function recon(ns) {
   for (let server of ns.scan()) {
+    if (whitelist.indexOf(server.toString()) === -1) continue;
     ns.run("helpers/get_stats.js", 1, server);
   }
 }
