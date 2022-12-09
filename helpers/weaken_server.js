@@ -1,25 +1,28 @@
 /** @param {NS} ns */
 
-export default async function weaken_server(ns, target) {
+export async function main(ns) {
+	let target = ns.args[0];
+
 	let threads, servers = 0;
 	let total_threads = 1 - 1;
-	let script_ram = ns.getScriptRam('weaken.js');
-	ns.tprint(`\n\nCurrent weaken.js impl needs ${script_ram}GB per thread.\n\n`);
+	let ram_req = ns.getScriptRam('weaken-ng.js');
+
+	ns.tprint(`\n\nCurrent weaken-ng.js impl needs ${ram_req}GB per thread.\n\n`);
 
 	for (let server of ns.scan("home")) {
 		let max_ram = ns.getServerMaxRam(server);
 		if (max_ram == 0) { continue };
 		servers++;
 
-		await ns.scp('weaken.js', server);
+		await ns.scp('weaken-ng.js', server);
 		ns.killall(server);
 
-		threads = Math.floor(max_ram / script_ram);
+		threads = Math.floor(max_ram / ram_req);
 		total_threads += threads;
 
 		ns.tprint(`(${max_ram}GB => ${threads} threads): ${server}`);
 
-		ns.exec("weaken.js", server, threads, target, threads);
+		ns.exec("weaken-ng.js", server, threads, target, threads);
 	}
 
 	ns.tprint(``);
