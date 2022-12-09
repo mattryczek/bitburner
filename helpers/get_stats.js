@@ -1,27 +1,35 @@
 /** @param {NS} ns */
 
+import fmt from "./helpers/fmt.js";
+
 export async function main(ns) {
 	let target = ns.args[0];
-	
-	let server_funds, sec, level, ram_used, ram_total, ports = 0;
+
+	let server_funds, sec, min_sec, level, ram_used, ram_total, ports = 0;
 	let root = false;
 
-	root = ns.hasRootAccess(target);
+	root = ns.hasRootAccess(target) ? '✅' : '❌';
 	ram_used = ns.getServerUsedRam(target);
 	ram_total = ns.getServerMaxRam(target);
 	server_funds = ns.getServerMoneyAvailable(target);
 	sec = ns.getServerRequiredHackingLevel(target);
+	min_sec = ns.getServerMinSecurityLevel(target);
 	level = ns.getServerSecurityLevel(target);
-	ports = ns.getServerNumPortsRequired(target);
 
-	ns.tprint('         __' + '_'.repeat(target.toString().length) + '__');
-	ns.tprint(`         >>${target}<<`);
-	ns.tprint('         ‾‾' + '‾'.repeat(target.toString().length) + '‾‾');
+	let header = `${root} ${target}`;
 
-	ns.tprint(`Root status: ${root}`);
-	ns.tprint(`Number of ports to NUKE: ${ports}`);
-	ns.tprint(`RAM Usage: ${ram_used}GB / ${ram_total}GB`)
-	ns.tprint(`Current funds: \$${Math.trunc(server_funds).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`);
-	ns.tprint(`Required Hack Level: ${sec}`);
-	ns.tprint(`Current Security Level: ${level.toFixed(4)}\n\n`);
+	ns.tprint('         ' + '_'.repeat(header.length + 1));
+	ns.tprint(`         ${header}`);
+	ns.tprint('         ' + '‾'.repeat(header.length + 1) );
+
+	ns.tprint('');
+
+	if (!ns.hasRootAccess(target)) ns.tprint(`☢️ Number of ports to NUKE: ${ns.getServerNumPortsRequired(target)}`)
+
+	ns.tprint(`💾 RAM: ${ram_used}GB / ${ram_total}GB`)
+	ns.tprint(`💰 Money: \$${fmt(Math.trunc(server_funds))}`);
+
+	if (ns.getHackingLevel() < sec) ns.tprint(`👨‍💻 Required Hack Level: ${sec}`);
+
+	ns.tprint(`🔐 Security: ${level.toFixed(4)} / ${min_sec.toFixed(4)}\n\n`);
 }
