@@ -12,6 +12,7 @@ export async function main(ns) {
 	ram_used = ns.getServerUsedRam(target);
 	ram_total = ns.getServerMaxRam(target);
 	server_funds = ns.getServerMoneyAvailable(target);
+	max_funds = ns.getServerMaxMoney(target);
 	sec = ns.getServerRequiredHackingLevel(target);
 	min_sec = ns.getServerMinSecurityLevel(target);
 	level = ns.getServerSecurityLevel(target);
@@ -27,7 +28,7 @@ export async function main(ns) {
 	if (!ns.hasRootAccess(target)) ns.tprint(`☢️ Number of ports to NUKE: ${ns.getServerNumPortsRequired(target)}`)
 
 	ns.tprint(`💾 RAM: ${ram_used}GB / ${ram_total}GB`)
-	ns.tprint(`💰 Money: \$${fmt(Math.trunc(server_funds))}`);
+	ns.tprint(`💰 Money: \$${fmt(Math.trunc(server_funds))} / \$${fmt(Math.trunc(max_funds))}`);
 
 	if (ns.getHackingLevel() < sec) ns.tprint(`👨‍💻 Required Hack Level: ${sec}`);
 

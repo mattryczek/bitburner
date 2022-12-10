@@ -41,6 +41,7 @@ function get_money(ns) {
 
   for (let server of ns.scan()) {
     server_funds = ns.getServerMoneyAvailable(server);
-    ns.tprint(`${server}: \$${fmt(Math.trunc(server_funds))}`);
+    max_funds = ns.getServerMaxMoney(server);
+    ns.tprint(`${server}: \$${fmt(Math.trunc(server_funds))} / \$${fmt(Math.trunc(max_funds))}`);
   }
 }
