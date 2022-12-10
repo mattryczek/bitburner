@@ -37,7 +37,7 @@ function recon(ns) {
 }
 
 function get_money(ns) {
-  let server_funds = 0;
+  let server_funds, max_funds = 0;
 
   for (let server of ns.scan()) {
     server_funds = ns.getServerMoneyAvailable(server);
