@@ -1,11 +1,11 @@
 /** @param {NS} ns */
 
-import fmt from "./helpers/fmt.js";
+import fmt from "./lib/fmt.js";
 
 export async function main(ns) {
 	let target = ns.args[0];
 
-	let server_funds, sec, min_sec, level, ram_used, ram_total, ports = 0;
+	let server_funds, sec, min_sec, max_funds, level, ram_used, ram_total, ports = 0;
 	let root = false;
 
 	root = ns.hasRootAccess(target) ? '✅' : '❌';

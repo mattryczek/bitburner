@@ -1,6 +1,6 @@
 /** @param {NS} ns */
 
-import fmt from "./helpers/fmt.js";
+import fmt from "./lib/fmt.js";
 
 export async function main(ns) {
 	// We override built in logs
@@ -12,9 +12,9 @@ export async function main(ns) {
 	// If we don't have root on the target just quit out right away.
 	if (!ns.run('smart_root.js', 1, target.toString(), 0)) return;
 
-	// If we can't hack the server then quick out too.
+	// If we can't hack the server then quit out too.
 	if (ns.getServerRequiredHackingLevel(target) > ns.getHackingLevel()){
-		ns.print(`Hack level too low to breach target. Exiting!`);
+		ns.print(`Hack level too low for ${target}. Exiting!`);
 		return;
 	}
 
@@ -22,12 +22,14 @@ export async function main(ns) {
 	const grow_str = '📈 Grow';
 	const weaken_str = '💣 Weaken';
 	const hack_str = '🔑 Hack';
-	const spacing = 11;
+	const profit_str = '💎 Profit';
+	const spacing = 12;
 
-	const sleep_str_norm  = sleep_str  + ' '.repeat(spacing - sleep_str.length);
-	const grow_str_norm   = grow_str   + ' '.repeat(spacing - grow_str.length);
-	const weaken_str_norm = weaken_str + ' '.repeat(spacing - weaken_str.length);
-	const hack_str_norm   = hack_str   + ' '.repeat(spacing - hack_str.length);
+	const sleep_str_norm    = sleep_str    + ' '.repeat(spacing - sleep_str.length);
+	const grow_str_norm     = grow_str     + ' '.repeat(spacing - grow_str.length);
+	const weaken_str_norm   = weaken_str   + ' '.repeat(spacing - weaken_str.length);
+	const hack_str_norm     = hack_str     + ' '.repeat(spacing - hack_str.length);
+	const profit_str_norm   = profit_str   + ' '.repeat(spacing - profit_str.length);
 
 	const steal_percentage = 0.5;
 	const sec_threshold = 0.5;
@@ -46,27 +48,36 @@ export async function main(ns) {
 	const hack_threads   = Math.floor(available_ram / hack_cost);
 	const weaken_threads = Math.floor(available_ram / weaken_cost);
 	const grow_threads   = Math.floor(available_ram / grow_cost);
-
-	ns.print(`Available RAM: ${available_ram}GB / ${ns.getServerMaxRam(whoami)}GB`);
-	ns.print(`Scriptlet RAM costs: Hack ${hack_cost}GB | Weaken ${weaken_cost}GB | Grow ${grow_cost}GB `);
-	ns.print(`Max spawnable threads: Hack ${hack_threads} | Weaken ${weaken_threads} | Grow ${grow_threads}`);
-	ns.print(``);
-	ns.print(`Hack script targeting >>${target}<<`);
+	
+	let delta_sec, weaken_needed = 0;
 
 	let server_min_sec_lvl = ns.getServerMinSecurityLevel(target);
 	let server_max_money = ns.getServerMaxMoney(target);
 
-	ns.print('');
-	ns.print(`Server Stats:`);
-	ns.print(`Funds: $${fmt(Math.trunc(ns.getServerMoneyAvailable(target)))} / $${fmt(server_max_money)}`);
-	ns.print(`Security: ${ns.getServerSecurityLevel(target)} / ${server_min_sec_lvl}`);
-	ns.print(`Growth Rate: ${ns.getServerGrowth(target)}`);
-	ns.print(`Growth Amount: Need ${double_need} threads to double money on server.`);
-	ns.print(`Hack amount: ${(hack_amount * 100).toFixed(2)}%, need ${hack_needed} threads to steal ${steal_percentage * 100}% of total funds at a time.`)
-	ns.print('');
-	ns.print('');
+	ns.tail('axiom.js', whoami, target);
 
-	let delta_sec, weaken_needed = 0;
+	ns.print(`Available RAM: ${available_ram}GB / ${ns.getServerMaxRam(whoami)}GB`);
+	ns.print(`Scriptlet RAM: H ${hack_cost}GB/T  W ${weaken_cost}GB/T  G ${grow_cost}GB/T`);
+	ns.print(`Max Threads: H ${hack_threads} W ${weaken_threads} G ${grow_threads}`);
+	ns.print(' ');
+	ns.print(`Hack script targeting >>${target}<<`);
+
+	delta_sec = ns.getServerSecurityLevel(target) - server_min_sec_lvl;
+	weaken_needed = delta_sec / 0.05;
+
+	ns.print(' ');
+	ns.print(`<==> Server Stats <==>`);
+	ns.print(`Funds: $${fmt(Math.trunc(ns.getServerMoneyAvailable(target)))} / $${fmt(server_max_money)}`);
+	ns.print(`Growth Rate: ${ns.getServerGrowth(target)}`);
+	ns.print(`Need ${double_need}T to double $$$.`);
+	ns.print(`Need ${hack_needed}T to abscond ${steal_percentage * 100}% of total $$$.`)
+	ns.print(' ');
+
+	if (weaken_needed) {		
+		ns.print(`Initial weaken ${Math.ceil(weaken_needed)}T ETA ${Math.trunc(ns.getWeakenTime(target) / 1000)} sec`);
+		ns.run('/barebones/weaken.js', Math.ceil(weaken_needed), target);
+		await ns.sleep(ns.getWeakenTime(target) + 3000);
+	}
 
 	async function _weaken() {
 		delta_sec = ns.getServerSecurityLevel(target) - server_min_sec_lvl;
@@ -74,10 +85,11 @@ export async function main(ns) {
 
 		Math.ceil(weaken_needed) === 0 ? weaken_needed = 1 : weaken_needed;
 
-		if (delta_sec <= server_min_sec_lvl * sec_threshold) {
-			ns.print(`${weaken_str_norm}Target security at ${ns.getServerSecurityLevel(target).toFixed(4)}`);
+		// if (delta_sec <= server_min_sec_lvl * sec_threshold) {
+		if (delta_sec <= 0) {
+			ns.print(`${weaken_str_norm}Target security at minimum.`);
 		} else {
-			ns.print(`${weaken_str_norm}Spawning ${Math.ceil(weaken_needed)} threads to bring target to ${server_min_sec_lvl} security.`);
+			ns.print(`${weaken_str_norm}Using ${Math.ceil(weaken_needed)}T`);
 			ns.print(`${sleep_str_norm}${Math.trunc(ns.getWeakenTime(target) / 1000)} sec`);
 			ns.run('/barebones/weaken.js', Math.ceil(weaken_needed), target);
 			await ns.sleep(ns.getWeakenTime(target) + 1000);
@@ -86,33 +98,31 @@ export async function main(ns) {
 
 	async function _grow() {
 		if (ns.getServerMoneyAvailable(target) < (server_max_money * steal_threshold)){
-			ns.print(`${grow_str_norm}Current server funds: $${fmt(Math.trunc(ns.getServerMoneyAvailable(target)))}`);
+			ns.print(`${grow_str_norm}Current balance $${fmt(Math.trunc(ns.getServerMoneyAvailable(target)))}`);
 
-			ns.print(`${grow_str_norm}Growing server with ${grow_threads} threads.`)
-			ns.run('/barebones/grow.js', grow_threads, target);
+			ns.print(`${grow_str_norm}Using ${double_need}T`);
+			ns.run('/barebones/grow.js', double_need, target);
 			ns.print(`${sleep_str_norm}${Math.trunc(ns.getGrowTime(target) / 1000)} sec`);
 			await ns.sleep(ns.getGrowTime(target) + 1000);
 
-			ns.print(`${grow_str_norm}Current server funds: $${fmt(Math.trunc(ns.getServerMoneyAvailable(target)))}`);
+			ns.print(`${grow_str_norm}New balance $${fmt(Math.trunc(ns.getServerMoneyAvailable(target)))}`);
 		}
 	}
 
 	async function _hack() {
-		if (ns.getServerMoneyAvailable(target) >= (server_max_money * steal_threshold)) {
-			ns.print(`${hack_str_norm}Hacking target with ${hack_needed} threads.`);
-			ns.print(`${hack_str_norm}Current server funds: $${fmt(Math.trunc(ns.getServerMoneyAvailable(target)))}`);
+		if (ns.getServerMoneyAvailable(target) === server_max_money) {
+			ns.print(`${hack_str_norm}Using ${hack_needed}T`);
 			ns.run('/barebones/hack.js', hack_needed, target);
 			ns.print(`${sleep_str_norm}${Math.trunc(ns.getHackTime(target) / 1000)} sec`);
 			await ns.sleep(ns.getHackTime(target) + 1000);
-			ns.print(`${hack_str_norm}Current server funds: $${fmt(Math.trunc(ns.getServerMoneyAvailable(target)))}`);
+			ns.print(`${profit_str_norm}Stole $${fmt(Math.trunc(server_max_money - ns.getServerMoneyAvailable(target)))}`);
 		}
 	}
-	
-	while(!0){
 
-		await _weaken();
+	while(!0){
 		await _grow();
-		// await _weaken();
+		await _weaken();
 		await _hack();
+		await _weaken();
 	}
 }

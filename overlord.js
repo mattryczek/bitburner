@@ -1,6 +1,6 @@
 /** @param {NS} ns **/
 
-import fmt from "./helpers/fmt.js"
+import fmt from "./lib/fmt.js"
 
 const whitelist = ['darkweb'];
 
@@ -19,29 +19,28 @@ export async function main(ns) {
       ns.run('helpers/get_stats.js', 1, ns.args[1]);
       break;
     case "money":
-      get_money(ns);
+      ns.run('getters/get_money.js', 1, ns.args[1]);
       break;
     case "nuke":
       ns.run('smart_root.js', 1, ns.args[1], 1);
+      break;
+    case "autoroot":
+      auto_root(ns);
       break;
     default:
       ns.tprint("I need to know what you want me to do...");
   }
 }
 
-function recon(ns) {
-  for (let server of ns.scan()) {
-    if (whitelist.indexOf(server.toString()) !== -1) continue;
-    ns.run("helpers/get_stats.js", 1, server);
+function auto_root(ns){
+  for (let server of ns.scan()){
+    ns.run('smart_root.js', 1, server, 1);
   }
 }
 
-function get_money(ns) {
-  let server_funds, max_funds = 0;
-
+function recon(ns) {
   for (let server of ns.scan()) {
-    server_funds = ns.getServerMoneyAvailable(server);
-    max_funds = ns.getServerMaxMoney(server);
-    ns.tprint(`${server}: \$${fmt(Math.trunc(server_funds))} / \$${fmt(Math.trunc(max_funds))}`);
+    if (whitelist.indexOf(server.toString()) !== -1) continue;
+    ns.run("getters/get_stats.js", 1, server);
   }
 }
