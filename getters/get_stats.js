@@ -30,7 +30,7 @@ export async function main(ns) {
 	ns.tprint(`💾 RAM: ${ram_used}GB / ${ram_total}GB`)
 	ns.tprint(`💰 Money: \$${fmt(Math.trunc(server_funds))} / \$${fmt(Math.trunc(max_funds))}`);
 
-	if (ns.getHackingLevel() < sec) ns.tprint(`👨‍💻 Required Hack Level: ${sec}`);
+	ns.tprint(`👨‍💻 Required Hack Level: ${sec}`);
 
 	ns.tprint(`🔐 Security: ${level.toFixed(4)} / ${min_sec.toFixed(4)}\n\n`);
 }

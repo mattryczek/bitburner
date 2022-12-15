@@ -9,14 +9,8 @@ export async function main(ns) {
     case "recon":
       recon(ns);
       break;
-    case "weaken":
-      ns.run('helpers/weaken_server.js', 1, ns.args[1]);
-      break;
-    case "hack":
-      ns.run('helpers/hack_server.js', 1, ns.args[1]);
-      break;
     case "stats":
-      ns.run('helpers/get_stats.js', 1, ns.args[1]);
+      ns.run('getters/get_stats.js', 1, ns.args[1]);
       break;
     case "money":
       ns.run('getters/get_money.js', 1, ns.args[1]);
@@ -24,7 +18,7 @@ export async function main(ns) {
     case "nuke":
       ns.run('smart_root.js', 1, ns.args[1], 1);
       break;
-    case "autoroot":
+    case "autonuke":
       auto_root(ns);
       break;
     default:

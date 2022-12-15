@@ -34,9 +34,9 @@ export async function main(ns) {
 	const steal_percentage = 0.5;
 	const sec_threshold = 0.5;
 	const steal_threshold = 0.9;
-	const hack_amount = ns.hackAnalyze(target);
-	const hack_needed = Math.ceil(steal_percentage / hack_amount);
-	const double_need = Math.ceil(ns.growthAnalyze(target, 2));
+	let   hack_amount = ns.hackAnalyze(target);
+	let   hack_needed = Math.ceil(steal_percentage / hack_amount);
+	let   double_need = Math.ceil(ns.growthAnalyze(target, 2));
 
 	const whoami = ns.getHostname();
 	const available_ram = ns.getServerMaxRam(whoami) - ns.getServerUsedRam(whoami);
@@ -97,7 +97,9 @@ export async function main(ns) {
 	}
 
 	async function _grow() {
-		if (ns.getServerMoneyAvailable(target) < (server_max_money * steal_threshold)){
+		double_need = Math.ceil(ns.growthAnalyze(target, 2));
+		
+		if (ns.getServerMoneyAvailable(target) < server_max_money){
 			ns.print(`${grow_str_norm}Current balance $${fmt(Math.trunc(ns.getServerMoneyAvailable(target)))}`);
 
 			ns.print(`${grow_str_norm}Using ${double_need}T`);
@@ -110,6 +112,9 @@ export async function main(ns) {
 	}
 
 	async function _hack() {
+		hack_amount = ns.hackAnalyze(target);
+	    hack_needed = Math.ceil(steal_percentage / hack_amount);
+
 		if (ns.getServerMoneyAvailable(target) === server_max_money) {
 			ns.print(`${hack_str_norm}Using ${hack_needed}T`);
 			ns.run('/barebones/hack.js', hack_needed, target);
